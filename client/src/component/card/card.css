@@ -1,0 +1,47 @@
+/* card */
+.card {
+  
+}
+
+.card-thumbnail {
+  width: 100%;
+  object-fit: cover;
+}
+
+.card-title {
+  font-family: Avenir, sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 14px;
+  /* or 14px */
+  color: #FFFFFF;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-username {
+  font-family: Avenir, sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 101.5%;
+  /* or 12px */
+  color: #555555;
+  margin-bottom: 5px;
+}
+
+.card span {
+  font-family: Avenir, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 101.5%;
+  /* or 12px */
+  color: #555555;
+  margin-right: 20px;
+}
+/* end card */
