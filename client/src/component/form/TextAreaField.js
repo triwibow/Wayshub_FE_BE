@@ -5,19 +5,32 @@ import {Fragment, useState, forwardRef, useImperativeHandle, useEffect} from 're
 
 const TextAreaField = forwardRef((props,ref) => {
     const [isFocus, setFocus] = useState(false);
-    const [error, setError] = useState(false);
+    const [submit, setSubmit] = useState(false);
+
+    const [error, setError] = useState({
+        status:false,
+        messages: ""
+    });
     const [value, setValue] = useState(props.value);
+
     
     const handleInputChange = (event) => {
         setValue(event.target.value);
+        setError({
+            messages:""
+        });
         props.onChange(event.target.name, event.target.value);
         setFocus(true);
+    }
+
+    const doSubmit = () => {
+        setSubmit(true);
     }
     
     const validate = () =>{
         for(let i = 0; i < props.validation.length; i++){
             if(props.validation[i] === "required"){
-                if(!value){
+                if(!value || value === ""){
                     setError({
                         ...error,
                         status:true,
@@ -40,40 +53,32 @@ const TextAreaField = forwardRef((props,ref) => {
                     return false;
                 }
             }
-
-            if(props.validation[i] === "uniq"){
-                if(props.dbValue){
-                    const filteredVal = props.dbValue.filter(val => value === val[props.name]);
-                    console.log(filteredVal);
-
-                    if(filteredVal.length > 0){
-                        setError({
-                            ...error,
-                            status:true,
-                            messages: `${props.placeholder} already used !`
-                        });
-            
-                        return false;
-                    }
-
-                }
-            }
         }
 
-        setError(false)
+        setError({
+            status: false
+        });
         return true;
         
     }
 
+
     useEffect(() => {
+        if(submit){
+            setValue('');
+            setSubmit(false);
+            setFocus(false);
+        }
+
         if(isFocus){
             validate();
         }
-    }, [value])
+    }, [value, submit]);
 
     useImperativeHandle(ref, () => {
         return {
-            validate: () => validate()
+            validate: () => validate(),
+            doSubmit: () => doSubmit()
         }
     })
 
@@ -85,9 +90,9 @@ const TextAreaField = forwardRef((props,ref) => {
                 name={props.name} 
                 onChange={(event) => {handleInputChange(event)}}
                 autoComplete={props.autoComplete}
-                value={props.value}
+                value={value}
             ></textarea>
-            {error? <ErrorInfo messages={error.messages}/>:""}
+            {error.status && (<ErrorInfo messages={error.messages}/>)}
         </Fragment>
     )
 })

@@ -37,7 +37,9 @@ const getChanels = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -65,7 +67,7 @@ const getChanelById = async (req, res) => {
         });
 
         if(!chanel){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Chanel not found"
@@ -83,7 +85,53 @@ const getChanelById = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
+        });
+    }
+}
+
+const getVideosByChanelId = async (req, res) => {
+    try {
+        const {id} = req.params;
+        const videos = await Video.findAll({
+            where: {
+                chanelId: id
+            },
+            attributes:{
+                exclude:['updatedAt','chanelId', 'chanelid', 'ChanelId'],
+            },
+            include:{
+                model: Chanel,
+                as: 'chanel'
+            }
+
+        });
+
+        if(!videos){
+            return res.send({
+                status: "error",
+                error: {
+                    message: "Resource not found"
+                }
+            });
+        }
+
+        res.send({
+            status: "success",
+            data : {
+                videos
+            }
+        });
+
+    } catch(err){
+        console.log(err);
+        return res.status(500).send({
+            status: "error",
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -101,16 +149,19 @@ const editChanel = async (req, res) => {
             }
         });
 
-        const { body, files } = req;
-        const thumbnailName = (files.thumbnail) ? files.thumbnail[0].filename : chanelDb.thumbnail
-        const photoName = (files.photo) ? files.photo[0].filename : chanelDb.photo;
+        const { body } = req;
+        const thumbnailName = (req.files.thumbnail) ? req.files.thumbnail[0].filename : chanelDb.thumbnail
+        const photoName = (req.files.photo) ? req.files.photo[0].filename : chanelDb.photo;
 
         if(currentUserLoginId != id){
             deleteFile('tmp/photo', photoName);
             deleteFile('tmp/thumbnail', thumbnailName);
             return res.status(400).send({
                 status: "error",
-                messages: "Invalid user"
+                error: {
+                    message: "Invalid user"
+                }
+                
             });
         }
 
@@ -118,13 +169,11 @@ const editChanel = async (req, res) => {
             email: Joi.string().email().required(),
             chanelName: Joi.string().required(),
             description: Joi.string().required(),
-            password: Joi.string()
+            password: Joi.string().required()
         });
 
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         const checkEmail = await Chanel.findOne({
             where: {
@@ -141,14 +190,10 @@ const editChanel = async (req, res) => {
         if(error){
             deleteFile('tmp/photo', photoName);
             deleteFile('tmp/thumbnail', thumbnailName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -156,7 +201,7 @@ const editChanel = async (req, res) => {
         if(checkEmail && body.email !== chanelDb.email){
             deleteFile('tmp/photo', photoName);
             deleteFile('tmp/thumbnail', thumbnailName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "email is already registered"
@@ -168,7 +213,7 @@ const editChanel = async (req, res) => {
         if(checkChanelName && body.chanelName !== chanelDb.chanelName){
             deleteFile('tmp/photo', photoName);
             deleteFile('tmp/thumbnail', thumbnailName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "chanel name is already registered"
@@ -176,14 +221,10 @@ const editChanel = async (req, res) => {
             });
         }
 
-        
-        const checkPassword = await bcrypt.compare(body.password, chanelDb.password);
-        
-        const newPasword = (checkPassword) ? chanelDb.password : await bcrypt.hash(body.password, 10);
 
-        const update = await Chanel.update({
+        await Chanel.update({
             ...body,
-            password: newPasword,
+            password: chanelDb.password,
             thumbnail: thumbnailName,
             photo: photoName
         }, {
@@ -223,7 +264,9 @@ const editChanel = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -259,9 +302,11 @@ const deleteChanel = async (req, res) => {
         });
 
         if(!chanelById){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
-                message: `Chanel with id: ${id} not found`,
+                error: {
+                    message: `Chanel with id : ${id} not found`
+                }
             });
         }
 
@@ -315,12 +360,15 @@ const deleteChanel = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
 
 exports.getChanels = getChanels;
 exports.getChanelById = getChanelById;
+exports.getVideosByChanelId = getVideosByChanelId;
 exports.editChanel = editChanel;
 exports.deleteChanel = deleteChanel;

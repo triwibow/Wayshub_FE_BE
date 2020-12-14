@@ -3,10 +3,10 @@ import {Fragment, useState} from 'react';
 import {Link} from 'react-router-dom';
 import navbar_photo_profile from '../../icon/navbar_photo_profile.svg';
 
-const ChannelHeader = ({current, isVideo}) => {
+const ChannelHeader = (props) => {
     const [activeNav, setActiveNav] = useState(true);
     const handleChannel = (status) => {
-        current(status);
+        props.current(status);
         (status)? setActiveNav('active') : setActiveNav('');
         
     }
@@ -14,10 +14,10 @@ const ChannelHeader = ({current, isVideo}) => {
     return (
         <Fragment>
             <div className="channel-header">
-                <img src={navbar_photo_profile} alt="foto profil"/>
+                <img src={`http://localhost:5000/photo/${props.data.photo}`} alt="foto profil"/>
                 <div className="channel-username">
-                    <span className="content-creator-username">Egi Jos</span>
-                    <span className="count-subscriber">15K Subscriber</span>
+                    <span className="content-creator-username">{props.data.chanelName}</span>
+                    <span className="count-subscriber">{props.data.subscribers.length} Subscriber</span>
                 </div>
                 <div className="button-wrapper">
                     <Link to="/edit-channel" className="link">

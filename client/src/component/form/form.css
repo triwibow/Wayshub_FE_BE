@@ -30,10 +30,18 @@
     border: none;
     font-family: Avenir, sans-serif;
     font-style: normal;
-    font-weight: 500;
-    font-size: 18px;
+    font-weight: 400;
+    font-size: 16px;
     line-height: 25px;
     color: #FFFFFF;
+  }
+
+  .button:hover {
+    background: rgba(210, 210, 210, 0.25);
+    border: 2px solid #BCBCBC;
+    border-radius: 5px;
+    color: #ffffff;
+    transition: background 0.2s ease-in-out;
   }
   
   .landing-form {
@@ -118,14 +126,27 @@
   border-radius: 5px;
   box-sizing: border-box;
   text-align: center;
-  padding: 18px 0;
+  padding: 10px 0;
+  margin-bottom: 20px;
+  color: #ffffff;
+  animation: showErrorAlert 0.2s ease;
+}
+
+.error-info {
+  background-color:#ff0800;
+  border-radius: 5px;
+  box-sizing: border-box;
+  text-align: center;
+  padding: 10px 0;
+  color: #ffffff;
   margin-bottom: 20px;
   animation: showErrorAlert 0.2s ease;
 }
 
-.success-info p {
+.success-info p, .error-info p {
+  padding: 0;
   font-weight: 500;
-  font-size: 18px;
+  font-size: 16px;
   line-height: 5px;
 }
 

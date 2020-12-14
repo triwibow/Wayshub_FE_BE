@@ -19,9 +19,12 @@ const getCommentsByVideo = async (req, res) => {
         });
 
         if(!videoById){
-            return res.status(400).send({
+            return res.send({
                 status: "error",
-                messages: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
+               
             });
         }
 
@@ -55,7 +58,9 @@ const getCommentsByVideo = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -81,9 +86,11 @@ const getDetailComment = async (req, res) => {
          });
 
          if(!comment){
-            return res.status(400).send({
+            return res.send({
                 status: "error",
-                messages: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             });
         }
  
@@ -97,9 +104,11 @@ const getDetailComment = async (req, res) => {
     } catch(err){
          console.log(err);
          return res.status(500).send({
-             status: "error",
-             messages: "server error"
-         });
+            status: "error",
+            error: {
+                message: "server error"
+            }
+        });
     }
  }
 
@@ -116,10 +125,14 @@ const getDetailComment = async (req, res) => {
             }
         });
 
+
         if(!videoById){
-            return res.status(400).send({
+            return res.send({
                 status:"error",
-                message: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
+                
             });
         }
 
@@ -127,19 +140,13 @@ const getDetailComment = async (req, res) => {
             comment: Joi.string().required()
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -169,7 +176,7 @@ const getDetailComment = async (req, res) => {
         
 
         res.send({
-            status: 'succes',
+            status: 'success',
             data: {
                 comment
             }
@@ -179,7 +186,9 @@ const getDetailComment = async (req, res) => {
          console.log(err);
          return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
      }
  }
@@ -199,9 +208,11 @@ const getDetailComment = async (req, res) => {
         });
 
         if(!commentById){
-            return res.status(400).send({
+            return res.send({
                 status:"error",
-                message: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             })
         }
 
@@ -209,19 +220,13 @@ const getDetailComment = async (req, res) => {
             comment: Joi.string().required()
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -265,7 +270,9 @@ const getDetailComment = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
  }
@@ -285,9 +292,11 @@ const getDetailComment = async (req, res) => {
         });
 
         if(!commentById){
-            return res.status(400).send({
+            return res.send({
                 status:"error",
-                message: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             })
         }
 
@@ -302,7 +311,9 @@ const getDetailComment = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
      }
  }

@@ -15,8 +15,6 @@ const addSubscribe = async (req, res) => {
         const { id } = req.user;
         const { body } = req;
 
-        console.log(body.chanelId);
-
         const isChanelExist = await Chanel.findOne({
             where : {
                 id: body.chanelId
@@ -26,7 +24,7 @@ const addSubscribe = async (req, res) => {
         console.log(isChanelExist);
 
         if(id === body.chanelId){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Cannot subscribe"
@@ -35,7 +33,7 @@ const addSubscribe = async (req, res) => {
         }
 
         if(!isChanelExist){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "chanel not exist"
@@ -54,25 +52,19 @@ const addSubscribe = async (req, res) => {
             chanelId: Joi.number().integer().required()
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
 
         if(isSubscribed){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Already subscribe to this chanel"
@@ -101,13 +93,15 @@ const addSubscribe = async (req, res) => {
                     chanel
                 }
             }
-        })
+        });
 
     } catch(err){
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -125,7 +119,7 @@ const unSubscribe = async (req, res) => {
         });
 
         if(!isSubscribed){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Resource not found"
@@ -146,7 +140,9 @@ const unSubscribe = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -156,22 +152,12 @@ const getSubscribtion = async (req, res) => {
         const { id } = req.user;
 
         const subscribtion = await sequelize.query(
-            `SELECT title, videos.thumbnail, videos.description, video, videos.createdAt, viewCount FROM videos LEFT JOIN chanels on chanels.id = videos.chanelId LEFT JOIN subscribes on subscribes.chanelId = chanels.id WHERE subscribes.subscriberId = ${id}`,
+            `SELECT chanels.id, chanels.email, chanels.chanelName, chanels.description, chanels.thumbnail, chanels.photo FROM subscribes LEFT JOIN chanels on chanels.id = subscribes.chanelId WHERE subscribes.subscriberId = ${id}`,
             {
               replacements: { status: 'active' },
               type: QueryTypes.SELECT
             }
         );
-
-
-        if(subscribtion.length === 0){
-            return res.status(400).send({
-                status: 'error',
-                error: {
-                    message: "Resource not found"
-                }
-            });
-        }
 
 
         res.send({
@@ -185,12 +171,131 @@ const getSubscribtion = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
 
+    }
+
+}
+
+const getVideosSubscribtion = async (req, res) => {
+    try {
+        const { id } = req.user;
+
+        const response = await sequelize.query(
+            `SELECT videos.id, title, videos.thumbnail, videos.description, video, videos.createdAt, viewCount, chanels.id as chanelId, chanels.email, chanels.chanelName, chanels.description as chanelDescription, chanels.thumbnail as chanelThumb, chanels.photo FROM videos LEFT JOIN chanels on chanels.id = videos.chanelId LEFT JOIN subscribes on subscribes.chanelId = chanels.id WHERE subscribes.subscriberId = ${id}`,
+            {
+              replacements: { status: 'active' },
+              type: QueryTypes.SELECT
+            }
+        );
+
+        const videos = [];
+
+        response.map(video => {
+            const tmpData = {
+                id: video.id,
+                title: video.title,
+                description: video.description,
+                thumbnail: video.thumbnail,
+                video: video.video,
+                createdAt: video.createdAt,
+                viewCount: video.viewCount,
+                chanel: {
+                    id: video.chanelId,
+                    email: video.email,
+                    chanelName: video.chanelName,
+                    description: video.description,
+                    thumbnail: video.chanelThumb,
+                    photo: video.photo
+                }
+                
+            }
+            videos.push(tmpData);
+        });
+
+        res.send({
+            status: "success",
+            data : {
+                videos
+            }
+        });
+
+    } catch(err){
+        console.log(err);
+        return res.status(500).send({
+            status: "error",
+            error: {
+                message: "server error"
+            }
+        });
+
+    }
+}
+
+const checkSubscribe = async (req, res) => {
+    try {
+        const { id } = req.user;
+        const { body } = req;
+
+        const isChanelExist = await Chanel.findOne({
+            where : {
+                id: body.chanelId
+            }
+        });
+
+        if(id === body.chanelId){
+            return res.send({
+                status: 'error',
+                error: {
+                    message: "Cannot subscribe"
+                }
+            });
+        }
+
+        if(!isChanelExist){
+            return res.send({
+                status: 'error',
+                error: {
+                    message: "chanel not exist"
+                }
+            });
+        }
+
+        const isSubscribed = await Subscribe.findOne({
+            where: {
+                chanelId: body.chanelId,
+                subscriberId: id
+            }
+        });
+
+        if(!isSubscribed){
+            return res.send({
+                status: 'error',
+                error: {
+                    message: "resource not found"
+                }
+            });
+        }
+
+        res.send({
+            status: "success",
+            data: {
+                subscribe: isSubscribed
+            }
+        });
+
+
+
+    } catch(err){
+        console.log(err);
     }
 }
 
 exports.addSubscribe = addSubscribe;
 exports.unSubscribe = unSubscribe;
 exports.getSubscribtion = getSubscribtion;
+exports.getVideosSubscribtion = getVideosSubscribtion;
+exports.checkSubscribe = checkSubscribe;

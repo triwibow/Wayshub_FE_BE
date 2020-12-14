@@ -1,14 +1,94 @@
 import './comment.css';
-import navbar_photo_profile from '../../icon/navbar_photo_profile.svg';
+import menudots from '../../icon/menudots.png';
+import DropdownComment from '../dropdown/DropdownComment';
+import { useState, useEffect } from 'react';
+import CommentModal from '../modal/CommentModal';
+import CommentLoader from '../loader/CommentLoader';
 
-const CommentList = () => {
+const CommentList = (props) => {
+    const [showMenu, setShowMenu] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [sameUser, setSameUser] = useState(false);
+
+    const checkUser = () => {
+        setLoading(true);
+        const chanelId = props.data.chanel.id;
+        const currentUserId = props.currentUser.id;
+        
+        if(chanelId === currentUserId){
+            setSameUser(true)
+        } else {
+            setSameUser(false);
+        }
+        setLoading(false);
+    }
+    
+    const showDropdown = () => {
+        if(showMenu){
+            setShowMenu(false);
+        } else {
+            setShowMenu(true);
+        }
+    }
+
+    const showModalDelete = () => {
+        setShowMenu(false);
+        setShowModal(true);
+    }
+
+    const closeModalDelete = () => {
+        setShowModal(false);
+    }
+
+    const deleteComment = async () => {
+        setLoading(true);
+        await props.deleteComment(props.data.id);
+        setShowModal(false);
+        setLoading(false);
+        
+    }
+
+    useEffect(() => {
+        checkUser();
+    }, []);
+
     return(
         <div className="comment-list">
-            <img src={navbar_photo_profile} alt="proifl"/>
+            {showModal && 
+                (
+                    <CommentModal 
+                        closeModal={()=> {closeModalDelete()}}
+                        actionDelete={() => {deleteComment()}} 
+                    />
+                )}
+            <div className="triangle-comment"></div>
+            <img className="comment-thumbnail" src={`http://localhost:5000/photo/${props.data.chanel.photo}`} alt="proifl"/>
             <div className="comment-body">
-                <h2>Michael Scumaker</h2>
-                <p>Man you don't know how important your work is to me, to us. As a med student I spend more time studying than doing anything else, I spend more time on my own with my computer than with my family and friends. I really gotta say thank you for actually making these "hard" moments enjoyable ! When I'll be a doctor I'll remember that people like you helped me more that probably realize</p>
+                {loading ? (
+                    <CommentLoader />
+                ):(
+                    <>
+                        <div className="comment">
+                            <h2>{props.data.chanel.chanelName}</h2>
+                            <p>{props.data.comment}</p>
+                        </div>
+                        {sameUser && (
+                            <div className="comment-menu">
+                                <button onClick={showDropdown}>
+                                    <img src={menudots} alt="menudots" />
+                                </button>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
+            {showMenu && (
+                <DropdownComment 
+                    showModalDelete={() => {showModalDelete()}} 
+                    show={showMenu} 
+                />
+            )}
         </div>
     )
 }

@@ -22,6 +22,15 @@ const getVideos = async (req, res) => {
             }
         });
 
+        if(!videos){
+            res.send({
+                status: "error",
+                error: {
+                    message: "data not found"
+                }
+            });
+        }
+
         res.send({
             status: "success",
             data : {
@@ -33,7 +42,9 @@ const getVideos = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
@@ -46,7 +57,7 @@ const getVideoById = async (req, res) => {
                 id
             },
             attributes:{
-                exclude:['updatedAt','chanelId', 'chanelid', 'ChanelId'],
+                exclude:['updatedAt','chanelId', 'ChanelId'],
             },
             include: [
                 {
@@ -75,9 +86,11 @@ const getVideoById = async (req, res) => {
         });
 
         if(!video){
-            return res.status(400).send({
+            return res.send({
                 status: "error",
-                messages: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             });
         }
 
@@ -92,10 +105,14 @@ const getVideoById = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }
+
+
 
 const addVideo = async (req, res) => {
     try {
@@ -108,7 +125,7 @@ const addVideo = async (req, res) => {
         if(!id){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "invalid user"
@@ -121,21 +138,15 @@ const addVideo = async (req, res) => {
             description: Joi.string().required(),
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -143,10 +154,10 @@ const addVideo = async (req, res) => {
         if(!thumbnailName){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: "please select thumbnail"
+                    message: "Please select thumbnail"
                 }
             });
         }
@@ -154,10 +165,10 @@ const addVideo = async (req, res) => {
         if(!videoName){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: "please select video"
+                    message: "Please select video"
                 }
             });
         }
@@ -221,7 +232,9 @@ const addVideo = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 
@@ -249,9 +262,11 @@ const editVideo = async (req, res) => {
         if(!videoDb){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: "error",
-                messages: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             });
         }
 
@@ -260,21 +275,15 @@ const editVideo = async (req, res) => {
             description: Joi.string().required(),
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
             deleteFile('tmp/thumbnail', thumbnailName);
             deleteFile('tmp/video', videoName);
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -344,6 +353,12 @@ const editVideo = async (req, res) => {
 
     } catch(err){
         console.log(err);
+        return res.status(500).send({
+            status: "error",
+            error: {
+                message: "server error"
+            }
+        });
     }
 }
 
@@ -361,9 +376,11 @@ const deleteVideo = async (req, res) => {
         });
 
         if(!videoDb){
-            return res.status(400).send({
+            return res.send({
                 status: "error",
-                messages: "Resource not found"
+                error: {
+                    message: "Resource not found"
+                }
             });
         }
 
@@ -393,7 +410,9 @@ const deleteVideo = async (req, res) => {
         console.log(err);
         return res.status(500).send({
             status: "error",
-            messages: "server error"
+            error: {
+                message: "server error"
+            }
         });
     }
 }

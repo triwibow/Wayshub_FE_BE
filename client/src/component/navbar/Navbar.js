@@ -3,11 +3,11 @@ import {Link, useHistory} from 'react-router-dom';
 import './navbar.css';
 import add_video_icon from '../../icon/add_video_icon.svg';
 import add_video_icon_active from '../../icon/add_video_icon_active.svg';
-import navbar_photo_profile from '../../icon/navbar_photo_profile.svg';
-
 import Dropdown from '../dropdown/Dropdown';
 
 const Navbar = () => {
+    const [loading, setLoading] = useState(true);
+    const currentUser = JSON.parse(localStorage.getItem('user'));
     const pathName = window.location.pathname;
     const [isDropdown, setDropdown] = useState(false);
     const history = useHistory();
@@ -16,11 +16,23 @@ const Navbar = () => {
         isDropdown? setDropdown(false):setDropdown(true);
     }
 
+    const getUser = () => {
+        if(!currentUser){
+            setLoading(true);
+        } else {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        getUser();
+    },[currentUser])
+
     useEffect(() => {
         return history.listen(() => {
             setDropdown(false);
         })
-    }, [history])
+    }, [history]);
 
     return(
         <div className="navbar">
@@ -38,7 +50,7 @@ const Navbar = () => {
 
                     <li className="navbar-menu-item">
                         <button className="navbar-menu-button" onClick={handleDropdown}>
-                            <img src={navbar_photo_profile} alt="add_video_icon"/>
+                            {loading ? "":<img src={`http://localhost:5000/photo/${currentUser.photo}`} alt="add_video_icon"/>}
                         </button>
                         {isDropdown ? <Dropdown/>: ""}
                     </li>

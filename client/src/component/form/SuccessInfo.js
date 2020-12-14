@@ -1,10 +1,10 @@
 import './form.css';
 
 
-const SuccessInfo = () => {
+const SuccessInfo = (props) => {
     return(
         <div className="success-info">
-            <p>Registered Successfully</p>
+            <p>{props.message}</p>
         </div>
     );
 }

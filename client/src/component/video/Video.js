@@ -6,39 +6,118 @@ import Comment from '../comment/Comment';
 
 import number_views from '../../icon/number_views.svg';
 import refresh_icon from '../../icon/refresh_icon.svg';
-import navbar_photo_profile from '../../icon/navbar_photo_profile.svg';
+import SubscribeModal from '../modal/SubscribeModal';
+import { useEffect, useState } from 'react';
 
-const Video = () => {
+const Video = (props) => {
+    const [isSubscribe, setIsSubscribe] = useState(false);
+    const [isSameChanel, setIsSameChanel] = useState(false);
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+    const [modal, setModal] = useState({
+        status: false,
+        message: ""
+    });
+
+    const closeModal = () => {
+        setModal({
+            status: false,
+            message: ""
+        });
+    }
+
+    
+    const doSubscribe = () => {
+        props.subscribe();
+        setIsSubscribe(true);
+        setModal({
+            status: true,
+            message: "Subscribe to this channel"
+        });
+    }
+
+    const doUnSubscribe = () => {
+        props.unSubscribe();
+        setIsSubscribe(false);
+        setModal({
+            status: true,
+            message: "Unsubscribe to this channel"
+        });
+    }
+
+    const checkSubscribe = async () => {
+        const subscribe = await props.checkSubscribe();
+
+        setIsSubscribe(subscribe);
+    }
+
+    useEffect(() => {
+        if(currentUser.id === props.data.chanel.id){
+            setIsSameChanel(true);
+        }
+       checkSubscribe();
+       return () => {
+           setModal({
+               status: false,
+               message: ""
+           });
+       }
+    },[]);
+
+
+
     return(
         <div>
+            {modal.status && (<SubscribeModal message={modal.message} closeModal={() => closeModal()} />)}
             <div className="video-wrapper">
-                <ReactPlayer className="video-player" url="https://www.youtube.com/watch?v=6pzfX1FePdo" />
-                <h1 className="video-title">BBQ Montain Boys Episode 5 : A Day in The Life of Farmer</h1>
+                <ReactPlayer
+                    width="100%"
+                    height="100%"
+                    className="video-player"
+                    playing
+                    url={`http://localhost:5000/video/${props.data.video}`}
+                    controls={true}
+                />
+                <h1 className="video-title">{props.data.title}</h1>
                 <span>
-                    <img src={number_views} alt="number_views" /> 162K
+                    <img src={number_views} alt="number_views" /> {props.data.viewCount}
                 </span>
                 <span>
-                    <img src={refresh_icon} alt="refresh_icon" /> 06 Sep 2020
+                    <img src={refresh_icon} alt="refresh_icon" /> {new Date(props.data.createdAt).toLocaleDateString()}
                 </span>
             </div>
             <div className="video-description-wrapper">
                 <div className="video-description-header">
-                    <img src={navbar_photo_profile} alt="foto profil"/>
+                    <img src={`http://localhost:5000/photo/${props.data.chanel.photo}`} alt="foto profil"/>
                     <div className="video-username">
-                        <Link to="/content-creator" className="link">
-                            <span className="content-creator-username">Egi Jos</span>
+                        <Link to={`/content-creator/${props.data.chanel.id}`} className="link">
+                            <span className="content-creator-username">{props.data.chanel.chanelName}</span>
                         </Link>
-                        <span className="count-subscriber">15K Subscriber</span>
+                        <span className="count-subscriber">{props.subscribers} Subscriber</span>
                     </div>
-                    <div className="button-wrapper">
-                        <button className="btn-subscribe">Subscribe</button>
-                    </div>
+                    {!isSameChanel && (
+                        <div className="button-wrapper">
+                            {!isSubscribe ? (
+                                <button className="btn-subscribe" onClick={doSubscribe}>Subscribe</button>
+                            ):(
+                                <button className="btn-unsubscribe" onClick={doUnSubscribe}>Unsubscribe</button>
+                            )}
+                        </div>
+                    )}
                 </div>
                 <div className="video-description-body">
-                    <p>I hope these videos bring you joy! A very special thanks to each and every one of you who support my channel through Patreon and Paypal. Do you enjoy my channel? Please consider supporting me! I can’t earn revenue on YouTube due to copyright restrictions, so help the channel continue to gr</p>
+                    <p>{props.data.description}</p>
                     <button className="show-more">Show More</button>
                 </div>
-                <Comment />
+                <Comment
+                    currentUser={props.currentUser} 
+                    comments={props.comments}
+                    addComment={async (formData) => {
+                        await props.addComment(formData);
+                    }}
+                    deleteComment={async (commentId) => {
+                        await props.deleteComment(commentId);
+                    }}
+                />
             </div>
         </div>
     )

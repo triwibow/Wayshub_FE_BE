@@ -4,58 +4,90 @@ import {useHistory} from 'react-router-dom';
 import {AppContext} from '../context/AppContext';
 import '../App.css';
 import title from '../title.svg';
-import User from '../api/User';
 import InputField from '../component/form/InputField';
+import Alert from '../component/form/Alert';
+import { API, setAuthToken } from '../config/api';
 
 const Login = () => {
-    let history = useHistory()
+    const router = useHistory()
     const [state, dispatch] = useContext(AppContext);
-    console.log(state.isLogin);
-
-    const userDb = User.getData();
     const inputRef = useRef([createRef(), createRef()]);
+    const [error, setError] = useState({
+        status: false,
+        message: ''
+    });
+  
+    const [formData, setFormData] = useState({
+        email: "",
+        password: ""
+    });
 
-    const data = {
-        "email": "",
-        "password":""
-    }
-
-    const [userData, setUserData] = useState(data);
-
-    const auth = ()=> {
-        return inputRef.current[1].current.auth();
-    }
-
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        let isValid = true;
-        
+    const validate = () => {
+        const error = [];
         for(let i = 0; i < inputRef.current.length; i++){
             const valid = inputRef.current[i].current.validate();
+
             if(!valid){
-                isValid = false;
+                error.push("error");
             }
         }
-        if(!isValid){
-            return;
+
+        if(error.length > 0){
+            return false;
         }
 
-        const authLogin = auth();
+        inputRef.current[0].current.doSubmit();
+        inputRef.current[1].current.doSubmit();
 
-        if(authLogin){
+        return true;
+    }
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+
+            if(!validate()){
+                return false;
+            }
+
+            const body = JSON.stringify(formData);
+            const config = {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+            const response = await API.post('/login', body, config);
+
+            if(response.data.status === "error"){
+                setError({
+                    status: true,
+                    message: "Invalid login"
+                });
+                return false;
+            }
+
             dispatch({
-                type: "LOGIN"
+                type: 'LOGIN',
+                payload: response.data.data.chanel
             });
-            history.push('/');
+
+            setAuthToken(response.data.data.chanel.token);
+            router.push('/');
+           
+        } catch(err){
+            console.log(err);
         }
     }
 
     const handleInputChange = (name, value) => {
-        setUserData({
-            ...userData,
-            [name] : value
+        setError({
+            status: false
         });
 
+        setFormData({
+            ...formData,
+            [name] : value
+        });
     }
 
     return(
@@ -69,31 +101,28 @@ const Login = () => {
 
             <div className="landing-form">
                 <h1>Sign In</h1>
+                {error.status ? <Alert status="error-info" message={error.message} />:null}
                 <form onSubmit={handleSubmit}>
                     <InputField 
                         type="text" 
                         placeholder="Email" 
                         name="email" 
-                        onChange={handleInputChange}
+                        onChange={(name, value) => handleInputChange(name, value)}
                         autoComplete="off"
-                        value={userData.email}
+                        value={formData.email}
                         ref={inputRef.current[0]}
-                        validation={["required", "email", "checkUser"]}
-                        dbValue={userDb}
+                        validation={['required', 'email']}
             
                     />
                     <InputField 
                         type="password" 
                         placeholder="Password"
                         name="password"
-                        onChange={handleInputChange}
+                        onChange={(name, value) => handleInputChange(name, value)}
                         autoComplete="off"
-                        value={userData.password}
+                        value={formData.password}
                         ref={inputRef.current[1]}
-                        checkField="email"
-                        validUser={userData.email}
-                        validation={["required"]}
-                        dbValue={userDb}
+                        validation={['required']}
                         
                     />
                     <button className="button">Sign In</button>

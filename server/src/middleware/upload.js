@@ -38,7 +38,7 @@ const upload = (fields) => {
         }
 
         if (file.fieldname === "video") {
-            if (!file.originalname.match(/\.(mp4)$/)) {
+            if (!file.originalname.match(/\.(mp4|webm)$/)) {
               req.fileValidationError = {
                 message: "Only Video files are allowed!",
               };
@@ -71,25 +71,34 @@ const upload = (fields) => {
         
         doUpload(req, res, (err) => {
             if(req.fileValidationError){
-                return res.status(400).send(req.fileValidationError);
+                const message = req.fileValidationError.message;
+                return res.send({
+                    status: "error",
+                    error: {
+                        message
+                    }
+                    
+                });
             }
 
             if(!req.files && !err){
-                return res.status(400).send({
+                return res.send({
                     status: 'error',
-                    error: {
-                        message: "Please select file to upload"
-                    }
+                    message: "Please select file to upload"
                 });
             }
 
             if (err) {
                 if (err.code === "LIMIT_FILE_SIZE") {
-                return res.status(400).send({
-                    message: "Max file sized 10MB",
-                });
+                    return res.send({
+                        status: "error",
+                        message: "Max file sized 10MB",
+                    });
                 }
-                return res.status(400).send(err);
+                return res.send({
+                    status: "error",
+                    message: err
+                });
             }
 
             return next();

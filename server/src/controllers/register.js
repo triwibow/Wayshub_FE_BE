@@ -14,19 +14,13 @@ const register = async (req, res) => {
             password: Joi.string().required()
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -44,19 +38,19 @@ const register = async (req, res) => {
         });
 
         if(checkEmail){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: "email is already registered"
+                    message: "Email is already registered"
                 }
             });
         }
 
         if(checkChanelName){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: "chanel name is already registered"
+                    message: "Chanel name is already registered"
                 }
             });
         }
@@ -68,8 +62,8 @@ const register = async (req, res) => {
             email,
             chanelName,
             description,
-            thumbnail: "default.png",
-            photo: "default.png",
+            thumbnail: "default.jpg",
+            photo: "default.jpg",
             password: hashedPassword
         });
 

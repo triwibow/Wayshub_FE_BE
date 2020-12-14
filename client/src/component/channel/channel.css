@@ -49,10 +49,18 @@
     border: none;
     font-family: Avenir, sans-serif;
     font-style: normal;
-    font-weight: 500;
-    font-size: 18px;
+    font-weight: 400;
+    font-size: 16px;
     line-height: 25px;
     color: #FFFFFF;
+  }
+
+  .btn-channel:hover {
+    background: rgba(210, 210, 210, 0.25);
+    border: 2px solid #BCBCBC;
+    border-radius: 5px;
+    color: #ffffff;
+    transition: background 0.2s ease-in-out;
   }
   
   

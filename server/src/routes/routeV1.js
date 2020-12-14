@@ -9,6 +9,7 @@ const { login } = require('../controllers/login');
 const {
     getChanels,
     getChanelById,
+    getVideosByChanelId,
     editChanel,
     deleteChanel
 } = require('../controllers/chanels');
@@ -32,8 +33,12 @@ const {
 const {
     addSubscribe,
     unSubscribe,
-    getSubscribtion
+    getSubscribtion,
+    getVideosSubscribtion,
+    checkSubscribe
 } = require('../controllers/subscribes');
+
+const { checkAuth } = require('../controllers/checkAuth');
 
 // register
 router.post('/register', register);
@@ -44,6 +49,7 @@ router.post('/login', login);
 // chanels
 router.get('/chanels', getChanels);
 router.get('/chanel/:id', getChanelById);
+router.get('/chanel/:id/videos', getVideosByChanelId);
 router.put('/chanel/:id', auth, upload(["photo", "thumbnail"]), editChanel);
 router.delete('/chanel/:id', auth, deleteChanel);
 
@@ -65,5 +71,10 @@ router.delete('/video/:videoId/comment/:commentId', auth, deleteComment);
 router.post('/subscribe', auth, addSubscribe);
 router.delete('/subscribe/:chanelId', auth, unSubscribe);
 router.get('/subscribe', auth, getSubscribtion);
+router.get('/videos-subscribtion', auth, getVideosSubscribtion)
+router.post('/check-subscribe', auth, checkSubscribe);
+
+// check auth
+router.get('/auth', auth, checkAuth);
 
 module.exports = router;

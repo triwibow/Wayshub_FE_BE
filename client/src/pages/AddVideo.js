@@ -7,6 +7,12 @@ import add_video_icon_active from '../icon/add_video_icon_active.svg';
 import Sidebar from '../component/sidebar/Sidebar';
 import Navbar from '../component//navbar/Navbar';
 
+import Alert from '../component/form/Alert';
+import ButtonLoader from '../component/loader/ButtonLoader';
+import SuccessInfo from '../component/form/SuccessInfo';
+
+import { API } from '../config/api';
+
 const AddVideo = () => {
     const [thumbnail, setThumbnail] = useState('Attach Thumbnail');
     const [video, setVideo] = useState('Upload Video');
@@ -14,20 +20,129 @@ const AddVideo = () => {
     const thumbnailFile = React.useRef();
     const videoFile = React.useRef();
 
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState({
+        status: false,
+        message: ""
+    });
+
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        thumbnail: "",
+        video: ""
+    });
+
+    const currentUser = JSON.parse(localStorage.getItem('user'));
+
     const handleThumbnailInputClick = () => {
         thumbnailFile.current.click();
     }
 
-    const handleThumbnailInputChange = (e) => {
-        setThumbnail(e.target.files[0].name)
+    const handleThumbnailInputChange = (event) => {
+        
+        if(event.target.files[0]){
+            setThumbnail(event.target.files[0].name);
+            setFormData({
+                ...formData,
+                [event.target.name] : event.target.files[0]
+            })
+        } else {
+            setThumbnail('Attach Thumbnail');
+        }
     }
 
     const handleVideoInputClick = () => {
         videoFile.current.click();
     }
 
-    const handleVideoInputChange = (e) => {
-        setVideo(e.target.files[0].name);
+    const handleVideoInputChange = (event) => {
+        if(event.target.files[0]){
+            setVideo(event.target.files[0].name);
+            setFormData({
+                ...formData,
+                [event.target.name] : event.target.files[0]
+            })
+        } else {
+            setVideo('Upload Video');
+        }
+    }
+
+    const handleChange = (event) => {
+        setSuccess(false);
+        setError({
+            ...error,
+            status: false
+        });
+        setFormData({
+            ...formData,
+            [event.target.name] : event.target.value
+        });
+    }
+
+    const handleSubmit = async (event)=>{
+        event.preventDefault();
+        setError({
+            ...error,
+            status: false
+        });
+        setSuccess(false);
+        setLoading(true);
+
+        const body = new FormData();
+        body.append('title', formData.title );
+        body.append('description', formData.description);
+        
+        if(thumbnailFile.current.files[0]){
+            body.append('thumbnail', formData.thumbnail);
+        }
+
+        if(videoFile.current.files[0]){
+            body.append('video', formData.video);
+        }
+
+        const config = {
+            headers: {
+              "content-type": "multipart/form-data",
+            },
+        };
+
+        try {
+            const response = await API.post('/video', body, config);
+
+            if(response.data.status !== "success"){
+                setSuccess(false);
+                
+                setError({
+                    ...error,
+                    status: true,
+                    message: response.data.error.message
+                });
+
+                setLoading(false);
+
+                return;
+            }
+
+            setFormData({
+                title: "",
+                description: "",
+                thumbnail: "",
+                video: "",
+            });
+
+            thumbnailFile.current.value = "";
+            videoFile.current.value = "";
+            setVideo('Upload Video');
+            setThumbnail('Attach Thumbnail');
+            setLoading(false);
+            setSuccess(true);
+           
+        } catch(err){
+            setLoading(false);
+            console.log(err);
+        }
     }
 
     return(
@@ -37,24 +152,43 @@ const AddVideo = () => {
                 <Navbar/>
                 <div className="form-container">
                     <h1>Add Video</h1>
-                    <form>
+                    {success && (<SuccessInfo message="Video added successfully" />)}
+                    {error.status && (<Alert status="error-info" message={error.message} />)}
+                    <form onSubmit={handleSubmit}>
                         <div className="inline-input">
-                            <input type="text" placeholder="Title"/>
+                            <input 
+                                type="text" 
+                                placeholder="Title"
+                                name="title"
+                                autoComplete="off"
+                                onChange={handleChange}
+                                value={formData.title}
+                            />
                             <div className="file-upload" onClick={handleThumbnailInputClick}>
                                 <label>{thumbnail}</label>
-                                <input type="file" ref={thumbnailFile} onChange={handleThumbnailInputChange}/>
+                                <input type="file" ref={thumbnailFile} onChange={handleThumbnailInputChange} name="thumbnail"/>
                                 <img src={attach_thumbnail} alt="icon"/>    
                             </div>
                         </div>
-                        <textarea placeholder="Description"></textarea>
+                        <textarea 
+                            placeholder="Description" 
+                            name="description"
+                            onChange={handleChange}
+                            value={formData.description}
+                        >
+                        </textarea>
                         <div className="input-file-container">
                             <div className="input-file" onClick={handleVideoInputClick}>
                                 <label>{video}</label>
-                                <input type="file" ref={videoFile} onChange={handleVideoInputChange}/>
+                                <input type="file" ref={videoFile} onChange={handleVideoInputChange} name="video"/>
                                 <img src={add_video_icon_active} alt="icon"/>    
                             </div>
                         </div>
-                        <button className="button">Add</button>
+                        <button className="button">
+                            {loading ? (
+                                <ButtonLoader />
+                            ): ("Add")}
+                        </button>
                         
                     </form>
                 </div>

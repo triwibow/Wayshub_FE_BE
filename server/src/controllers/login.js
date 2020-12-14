@@ -12,19 +12,13 @@ const login = async (req, res) => {
             password: Joi.string().required()
         });
 
-        const { error } = schema.validate(body ,{
-            abortEarly: false
-        });
+        const { error } = schema.validate(body);
 
         if(error){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
-                    message: error.details.map(err => {
-                        return {
-                            [err.path] : err.message
-                        };
-                    })
+                    message: error.message
                 }
             });
         }
@@ -37,7 +31,7 @@ const login = async (req, res) => {
 
 
         if(!user){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Invalid login"
@@ -50,7 +44,7 @@ const login = async (req, res) => {
         const validPassword = await bcrypt.compare(password, user.password);
 
         if(!validPassword){
-            return res.status(400).send({
+            return res.send({
                 status: 'error',
                 error: {
                     message: "Invalid login"

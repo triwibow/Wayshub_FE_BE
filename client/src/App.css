@@ -1,5 +1,6 @@
 html, body {
   height: 100%;
+  background: #000000;
 }
 
 .link {
@@ -37,7 +38,7 @@ html, body {
   margin-bottom: 61px;
 }
 
-.button {
+/* .button {
   cursor: pointer;
   display: block;
   padding: 13px 40px;
@@ -50,7 +51,8 @@ html, body {
   font-size: 18px;
   line-height: 25px;
   color: #FFFFFF;
-}
+} */
+
 
 .landing-form {
   margin-left: 100px;
@@ -281,6 +283,16 @@ html, body {
 
 .form-container button {
   width: 100%;
+  margin-top: 24px;
+  margin-bottom: 40px;
+}
+
+.form-container button:hover {
+  background: rgba(210, 210, 210, 0.25);
+  border: 2px solid #BCBCBC;
+  border-radius: 5px;
+  color: #ffffff;
+  transition: background 0.2s ease-in-out;
 }
 
 .form-container input:focus, .form-container textarea:focus {
@@ -306,3 +318,20 @@ html, body {
 /* end cover */
 
 
+.show-more-videos {
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 500;
+  justify-self: flex-end;
+  display: block;
+  width: 80%;
+  cursor: pointer;
+  outline: none;
+}
+
+.show-more-videos:hover {
+  color: #FF7A00;
+  transition: all 0.3s;
+}

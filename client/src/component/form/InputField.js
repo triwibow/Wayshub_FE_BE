@@ -6,7 +6,7 @@ import {Fragment, useState, forwardRef, useImperativeHandle, useEffect} from 're
 
 const InputField = forwardRef((props, ref) => {
     const [isFocus, setFocus] = useState(false);
-
+    const [submit, setSubmit] = useState(false);
     const [error, setError] = useState({
         status:false,
         messages: ""
@@ -17,16 +17,25 @@ const InputField = forwardRef((props, ref) => {
     const handleInputChange = (event) => {
         setValue(event.target.value);
         setError({
+            ...error,
             messages:""
         });
         props.onChange(event.target.name, event.target.value);
+
         setFocus(true);
+        
     }
+
+    const doSubmit = () => {
+        setSubmit(true);
+    }
+
     
     const validate = () =>{
+        
         for(let i = 0; i < props.validation.length; i++){
             if(props.validation[i] === "required"){
-                if(!value){
+                if(!value || value === ""){
                     setError({
                         ...error,
                         status:true,
@@ -34,7 +43,8 @@ const InputField = forwardRef((props, ref) => {
                     });
         
                     return false;
-                } 
+                }
+                
             }
 
             if(props.validation[i] === "email"){
@@ -45,78 +55,36 @@ const InputField = forwardRef((props, ref) => {
                         status:true,
                         messages: `Not valid email !`
                     });
-        
-                    return false;
-                }
-            }
-
-            if(props.validation[i] === "uniq"){
-                if(props.dbValue){
-                    const filteredVal = props.dbValue.filter(val => value === val[props.name]);
-
-                    if(filteredVal.length > 0){
-                        setError({
-                            ...error,
-                            status:true,
-                            messages: `${props.placeholder} already used !`
-                        });
-            
-                        return false;
-                    }
-
-                }
-            }
-
-            if(props.validation[i] === "checkUser"){
-                const userDb = props.dbValue.filter(val=> value === val[props.name]);
-
-                if(userDb.length === 0){
-                    setError({
-                        ...error,
-                        status:true,
-                        messages: `${props.placeholder} not registered !`
-                    });
 
                     return false;
                 }
             }
-
         }
 
-        setError(false)
+        setError({
+            status: false
+        });
+       
         return true;
         
     }
 
-    const auth = () => {
-        const userDb = props.dbValue.filter(val=> props.validUser === val[props.checkField]);
-
-        if(userDb.length > 0){
-            if(userDb[0][props.name] !== value){
-                setError({
-                    ...error,
-                    status:true,
-                    messages: `${props.placeholder} wrong !`
-                });
-                return false;
-            } else {
-                return true;
-            }
-            
-        }
-    }
-
-
     useEffect(() => {
-        if(isFocus){
+        if(submit){
+            setValue('');
+            setSubmit(false);
+            setFocus(false);
+        }
+
+        if(isFocus){ 
             validate();
         }
-    }, [value])
+    }, [value, submit]);
 
     useImperativeHandle(ref, () => {
         return {
             validate: () => validate(),
-            auth:() => auth()
+            doSubmit: () => doSubmit()
         }
     })
 
@@ -128,9 +96,9 @@ const InputField = forwardRef((props, ref) => {
                 name={props.name} 
                 onChange={(event)=>{handleInputChange(event)}}
                 autoComplete={props.autoComplete}
-                value={props.value}
+                value={value}
             />
-            {error.status? <ErrorInfo messages={error.messages}/>:""}
+            {error.status && (<ErrorInfo messages={error.messages}/>)}
         </Fragment>
     )
 })

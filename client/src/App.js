@@ -20,27 +20,68 @@ import MyChannel from './pages/MyChannel';
 import EditChannel from './pages/EditChannel';
 import ContentCreator from './pages/ContentCreator';
 
-import {AppContextProvider} from './context/AppContext';
+import {API, setAuthToken} from './config/api';
+import { AppContext } from './context/AppContext';
+import { useContext, useEffect } from 'react';
 
 const App = () => {
+  const [state, dispatch] = useContext(AppContext);
+
+  const loadUser = async () => {
+    
+    try {
+      
+
+      const token = localStorage.getItem('token');
+
+      if(!token){
+        return dispatch({
+          type: "LOGOUT"
+        });
+      }
+      setAuthToken(token);
+      
+      const response = await API.get('/auth');  
+
+      if(response.data.status !== "success"){
+          return dispatch({
+              type: "AUTH_ERROR"
+          });
+      }
+
+      dispatch({
+        type: "LOAD_USER",
+        payload: response.data.data.user
+      });
+
+    } catch(err){
+        console.log(err);
+        return dispatch({
+          type: "AUTH_ERROR",
+      });
+    }
+  }
+
+  useEffect(() => {
+    loadUser();
+  },[state.login]);
+
   return (
-    <AppContextProvider>
-      <Router>
-        <div className="App">
-          <Switch>
-            <Route path="/login" component={Login} />
-            <Route path="/register" component={Register} />
-            <PrivateRoute exact path="/" component={Home} />
-            <PrivateRoute path="/subscribtion" component={Subscribtion} />
-            <PrivateRoute path="/detail" component={Detail} />
-            <PrivateRoute path="/add" component={AddVideo} />
-            <PrivateRoute path="/my-channel" component={MyChannel} />
-            <PrivateRoute path="/edit-channel" component={EditChannel} />
-            <PrivateRoute path="/content-creator" component={ContentCreator} />
-          </Switch>
-        </div>
-      </Router>
-    </AppContextProvider>
+    <Router>
+      <div className="App">
+        <Switch>
+          <Route exact path="/login" component={Login} />
+          <Route exact path="/register" component={Register} />
+          <PrivateRoute exact path="/" component={Home} />
+          <PrivateRoute exact path="/subscribtion" component={Subscribtion} />
+          <PrivateRoute exact path="/detail/:id" component={Detail} />
+          <PrivateRoute exact path="/add" component={AddVideo} />
+          <PrivateRoute exact path="/my-channel" component={MyChannel} />
+          <PrivateRoute exact path="/edit-channel" component={EditChannel} />
+          <PrivateRoute exact path="/content-creator/:id" component={ContentCreator} />
+        </Switch>
+      </div>
+    </Router>
   );
 }
 

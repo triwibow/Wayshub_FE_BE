@@ -2,8 +2,8 @@ const fs = require('fs');
 const path  = require('path');
 
 const moveFile = (dest, fileName) => {
-    const destinationPath = path.join(__dirname, `../../uploads/tmp/${dest}/`);
-    const newDestionation = path.join(__dirname, `../../uploads/${dest}/`)
+    const destinationPath = path.resolve(__dirname, `../../uploads/tmp/${dest}/`);
+    const newDestionation = path.resolve(__dirname, `../../uploads/${dest}/`)
    
     fs.readdir(destinationPath, (err, files) => {
         files.forEach(file => {
@@ -21,16 +21,32 @@ const moveFile = (dest, fileName) => {
 }
 
 const deleteFile = (dest, fileName) => {
-    const destinationPath = path.join(__dirname, '../../uploads/');
+    const destinationPath = path.resolve(__dirname, '../../uploads/');
 
-    fs.unlink(`${destinationPath}/${dest}/${fileName}`, (err) => {
-        if(err) {
-            console.log(err);
-            return;
-        }
+    if(fileName === "default.jpg" && dest === "photo"){
+        console.log(true);
+        return;
+    }
 
-        console.log("delete file");
-    })
+    if(fileName === "default.jpg" && dest === "thumbnail"){
+        console.log(true);
+        return;
+    }
+
+    if(fs.existsSync(`${destinationPath}/${dest}/${fileName}`)){
+        fs.unlink(`${destinationPath}/${dest}/${fileName}`, (err) => {
+            if(err) {
+                console.log(err);
+                return;
+            }
+    
+            console.log("delete file");
+        })
+    } else {
+        return;
+    }
+
+    
 }
 
 exports.moveFile = moveFile;

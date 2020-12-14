@@ -4,62 +4,112 @@ import {useState, useRef, createRef} from 'react';
 import '../App.css';
 import title from '../title.svg';
 
-import User from '../api/User';
 import InputField from '../component/form/InputField';
 import TextAreaField from '../component/form/TextAreaField';
 import SuccessInfo from '../component/form/SuccessInfo';
+import Alert from '../component/form/Alert';
+import ButtonLoader from '../component/loader/ButtonLoader';
+
+
+import { API } from '../config/api';
 
 const Register = () => {
     const inputRef = useRef([createRef(), createRef(), createRef(), createRef()]);
-    const userDb = User.getData();
-    const id = userDb ? userDb.length + 1 : 1;
+    const [success, setSuccess] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState({
+        status: false,
+        message: ""
+    });
+
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        chanelName: "",
+        description: ""
+    });
+
     
-    const data = {
-        "id" : id,
-        "email": "",
-        "password":"",
-        "name_channel": "",
-        "description": ""
-    }
-    const [userData, setUserData] = useState(data);
-    const [isSuccess, setSuccess] = useState(false);
-
-
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        let isValid = true;
+    const validate = () => {
+        const error = [];
         for(let i = 0; i < inputRef.current.length; i++){
             const valid = inputRef.current[i].current.validate();
 
             if(!valid){
-                isValid = false;
+                error.push("error");
             }
         }
 
-        if(!isValid){
-            return;
+        if(error.length > 0){
+            return false;
         }
 
-        setUserData({
-            "id" : id,
-            "email": "",
-            "password":"",
-            "name_channel": "",
-            "description": ""
-        })
+        for(let i = 0; i < inputRef.current.length; i++){
+            inputRef.current[i].current.doSubmit();
 
-        User.add(userData);
-        setSuccess(true);
+        }
+        
+        return true;
+    }
+
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            setLoading(true);
+            setError({
+                ...error,
+                status: false
+            });
+
+            setSuccess(false);
+
+            if(!validate()){
+                setLoading(false);
+                return false;
+            }
+
+            const body = JSON.stringify(formData);
+            const config = {
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            }
+            const response = await API.post('/register', body, config);
+
+            if(response.data.status === "success"){
+                setSuccess(true);
+                setError({
+                    ...error,
+                    status: false
+                });
+                setLoading(false);
+            } else {
+                setError({
+                    status: true,
+                    message: response.data.error.message
+                });
+                setSuccess(false);
+                setLoading(false);
+            }
+           
+        } catch(err){
+            console.log(err);
+        }
     }
 
 
     const handleInputChange = (name, value) => {
-        setUserData({
-            ...userData,
+        setFormData({
+            ...formData,
             [name] : value
         });
 
         setSuccess(false);
+        setError({
+            ...error,
+            status: false
+        })
     }
 
     return(
@@ -73,7 +123,8 @@ const Register = () => {
 
             <div className="landing-form">
                 <h1>Sign Up</h1>
-                {isSuccess? <SuccessInfo/>:""}
+                {success && (<SuccessInfo message="Registration was successful" />)}
+                {error.status && (<Alert status="error-info" message={error.message} />)}
                 <form onSubmit={handleSubmit}>
                     <InputField 
                         type="text" 
@@ -81,10 +132,9 @@ const Register = () => {
                         name="email" 
                         onChange={handleInputChange}
                         autoComplete="off"
-                        value={userData.email}
+                        value={formData.email}
                         ref={inputRef.current[0]}
-                        validation={["required", "email", "uniq"]}
-                        dbValue={userDb}
+                        validation={["required", "email"]}
             
                     />
                     <InputField 
@@ -93,7 +143,7 @@ const Register = () => {
                         name="password"
                         onChange={handleInputChange}
                         autoComplete="off"
-                        value={userData.password}
+                        value={formData.password}
                         ref={inputRef.current[1]}
                         validation={["required"]}
                         
@@ -101,25 +151,32 @@ const Register = () => {
                     <InputField 
                         type="text" 
                         placeholder="Name Channel"
-                        name="name_channel"
+                        name="chanelName"
                         onChange={handleInputChange}
                         autoComplete="off"
-                        value={userData.name_channel}
+                        value={formData.chanelName}
                         ref={inputRef.current[2]}
-                        validation={["required", "uniq"]}
-                        dbValue={userDb}
+                        validation={["required"]}
+
                     />
         
                     <TextAreaField
                         placeholder="Description Channel"
                         name="description"
                         onChange={handleInputChange}
-                        value={userData.description}
+                        value={formData.description}
                         ref={inputRef.current[3]}
                         validation={["required"]}
                     />
     
-                    <button className="button">Sign Up</button>
+                    <button className="button">
+                        {loading ? 
+                            (
+                                <ButtonLoader />
+                            ): 
+                            ("Sign Up")
+                        }
+                    </button>
                 </form>
             </div>
         </div>  

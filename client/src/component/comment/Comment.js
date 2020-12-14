@@ -1,21 +1,64 @@
 import './comment.css';
 import CommentList from './CommentList';
-import navbar_photo_profile from '../../icon/navbar_photo_profile.svg'
+import {useState} from 'react';
 
-const Comment = () => {
+import ButtonLoader from '../loader/ButtonLoader';
+
+const Comment = (props) => {
+    const [formData, setFormData] = useState({
+        comment: ""
+    });
+    const [loading, setLoading] = useState(false);
+
+    const handleChange = (event) => {
+        setFormData({
+            [event.target.name]: event.target.value
+        })
+    }
+    
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        setLoading(true);
+        await props.addComment(formData);
+        setFormData({
+            comment:""
+        });
+        setLoading(false);
+    }
+
     return(
         <div className="comment-container">
-            <form className="comment-form">
+            <form className="comment-form" onSubmit={handleSubmit}>
                 <div className="comment-input">
-                    <img src={navbar_photo_profile} alt="profile" />
-                    <input type="text" placeholder="Add Comment..." />
+                    <img src={`http://localhost:5000/photo/${props.currentUser.photo}`} alt="profile" />
+                    <textarea
+                        type="text" 
+                        placeholder="Add Comment..." 
+                        name="comment" 
+                        onChange={handleChange} 
+                        value={formData.comment}
+                    >
+                    </textarea>
                 </div>
-                <button className="button">Comment</button>
+                <button className="button">
+                    {loading ? (
+                        <ButtonLoader />
+                    ): ("Comment")}
+                </button>
             </form>
-            <CommentList/>
-            <CommentList/>
-            <CommentList/>
-            <CommentList/>
+
+            {
+                props.comments.map(comment => {
+                    return <CommentList 
+                                currentUser={props.currentUser}
+                                data={comment} 
+                                key={comment.id}
+                                deleteComment={async (commentId) => {props.deleteComment(commentId)}} 
+                            />
+                })
+            }
+            
+            
         </div>
     )
 }

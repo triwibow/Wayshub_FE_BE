@@ -1,16 +1,41 @@
 import './sidebar.css';
 import {Link} from 'react-router-dom';
+import { useContext, useEffect, useState } from 'react';
 import Icon from '../../icon/icon.svg';
 import home_icon from '../../icon/home_icon.svg';
 import home_icon_active from '../../icon/home_icon_active.svg';
 import subscription_icon from '../../icon/subscription_icon.svg';
 import subscription_icon_active from '../../icon/subscription_icon_active.svg';
-import user_channel_icon from '../../icon/user_channel_icon.svg';
+
+import { API } from '../../config/api';
+import {AppContext} from '../../context/AppContext';
 
 
 const Sidebar = () => {
-
     const pathName = window.location.pathname;
+    const [state, dispatch] = useContext(AppContext);
+
+    const getSubscribtion = async () => {
+        try {
+            const subscribtions = await API.get('/subscribe');
+
+            if(subscribtions.data.status === "success"){
+                dispatch({
+                    type: "LOAD_SUBSCRIBTION",
+                    payload: subscribtions.data.data
+                });
+                return;
+            }
+
+        } catch(err){
+            console.log(err)
+        }
+    }
+
+
+    useEffect(() => {
+        getSubscribtion();
+    },[])
 
     return(
         <div className="sidebar">
@@ -30,36 +55,26 @@ const Sidebar = () => {
                 </li>
             </ul>
 
-            <h1 className="sidebar-list-title">Channel</h1>
+            {state.subscribtion.length > 0 && (
+                <h1 className="sidebar-list-title">Channel</h1>
+            )}
 
             <ul className="sidebar-list">
-                <li className="sidebar-list-item">
-                    <Link to="/subscription" className="sidebar-link">
-                        <img src={user_channel_icon} alt="user_channel_icon" className="sidebar-photo-profile" />
-                        <span className="sidebar-username">Sab</span>
-                    </Link>
-                </li>
-                <li className="sidebar-list-item">
-                    <Link to="/subscription" className="sidebar-link">
-                        <img src={user_channel_icon} alt="user_channel_icon" className="sidebar-photo-profile" />
-                        <span className="sidebar-username">BBQ Montain Bossksdalsdkaldk</span>
-                    </Link>
-                </li>
-                <li className="sidebar-list-item">
-                    <Link to="/subscription" className="sidebar-link">
-                        <img src={user_channel_icon} alt="user_channel_icon" className="sidebar-photo-profile" />
-                        <span className="sidebar-username">Egi Jos</span>
-                    </Link>
-                </li>
-                <li className="sidebar-list-item">
-                    <Link to="/subscription" className="sidebar-link">
-                        <img src={user_channel_icon} alt="user_channel_icon" className="sidebar-photo-profile" />
-                        <span className="sidebar-username">Tahu Coding</span>
-                    </Link>
-                </li>
+                {state.subscribtion.map(subscribtion => {
+                    return (
+                        <li className="sidebar-list-item" key={subscribtion.id}>
+                            <Link to={`/content-creator/${subscribtion.id}`} className="sidebar-link">
+                                <img src={`http://localhost:5000/photo/${subscribtion.photo}`} alt="user_channel_icon" className="sidebar-photo-profile" />
+                                <span className="sidebar-username">{subscribtion.chanelName}</span>
+                            </Link>
+                        </li>
+                    )
+                })}
             </ul>
 
-            <button className="show-more">Show More</button>
+            {state.subscribtion.length > 5 && (
+                <button className="show-more">Show More</button>
+            )}
         </div>
     )
 }
