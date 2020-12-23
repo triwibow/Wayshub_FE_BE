@@ -6,6 +6,7 @@ const {
 
 const Joi = require('joi');
 const { moveFile, deleteFile } = require('../helper/file');
+const { cloudinary } = require('../../config/cloudinary');
 
 const getVideos = async (req, res) => {
     try {
@@ -112,19 +113,17 @@ const getVideoById = async (req, res) => {
     }
 }
 
-
-
 const addVideo = async (req, res) => {
     try {
         const { id } = req.user;
 
         const { body, files } = req;
-        const thumbnailName = (files.thumbnail) ? files.thumbnail[0].filename : null;
-        const videoName = (files.video) ? files.video[0].filename : null;
+        const thumbnailFile = (files.thumbnail) ? files.thumbnail[0] : null;
+        const videoFile = (files.video) ? files.video[0] : null;
+
+        console.log(thumbnailFile)
 
         if(!id){
-            deleteFile('tmp/thumbnail', thumbnailName);
-            deleteFile('tmp/video', videoName);
             return res.send({
                 status: 'error',
                 error: {
@@ -141,8 +140,18 @@ const addVideo = async (req, res) => {
         const { error } = schema.validate(body);
 
         if(error){
-            deleteFile('tmp/thumbnail', thumbnailName);
-            deleteFile('tmp/video', videoName);
+            if(thumbnailFile){
+                cloudinary.uploader.destroy(thumbnailFile.filename, (error, result)=>{
+                    console.log(error, result)
+                })
+            }
+
+            if(videoFile){
+                cloudinary.uploader.destroy(videoFile.filename, {resource_type: 'video'}, (error, result)=>{
+                    console.log(error, result)
+                })
+                
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -151,9 +160,13 @@ const addVideo = async (req, res) => {
             });
         }
 
-        if(!thumbnailName){
-            deleteFile('tmp/thumbnail', thumbnailName);
-            deleteFile('tmp/video', videoName);
+        if(!thumbnailFile){
+            if(videoFile){
+                cloudinary.uploader.destroy(videoFile.filename, {resource_type: 'video'}, (error, result)=>{
+                    console.log(error, result)
+                })
+                
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -162,9 +175,12 @@ const addVideo = async (req, res) => {
             });
         }
 
-        if(!videoName){
-            deleteFile('tmp/thumbnail', thumbnailName);
-            deleteFile('tmp/video', videoName);
+        if(!videoFile){
+            if(thumbnailFile){
+                cloudinary.uploader.destroy(thumbnailFile.filename, (error, result)=>{
+                    console.log(error, result)
+                })
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -173,12 +189,22 @@ const addVideo = async (req, res) => {
             });
         }
 
+        const thumbnailUpload = {
+            path: thumbnailFile.path,
+            filename: thumbnailFile.filename
+        }
+
+        const videoUpload = {
+            path: videoFile.path,
+            filename: videoFile.filename
+        }
+
         const postVideo = await Video.create(
             {
                 ...body,
                 chanelId: id,
-                thumbnail: thumbnailName,
-                video: videoName,
+                thumbnail: JSON.stringify(thumbnailUpload),
+                video: JSON.stringify(videoUpload),
                 viewCount: 0
             }
         );
@@ -216,10 +242,6 @@ const addVideo = async (req, res) => {
 
         });
 
-
-        moveFile('thumbnail', postVideo.thumbnail);
-        moveFile('video', postVideo.video);
-
         return res.send({
             status: "success",
             data: {
@@ -239,6 +261,7 @@ const addVideo = async (req, res) => {
     }
 
 }
+
 
 const editVideo = async (req, res) => {
     try {
@@ -384,9 +407,6 @@ const deleteVideo = async (req, res) => {
             });
         }
 
-        deleteFile('thumbnail', videoDb.thumbnail);
-        deleteFile('video', videoDb.video);
-
         await Comment.destroy({
             where: {
                 videoId
@@ -398,6 +418,17 @@ const deleteVideo = async (req, res) => {
                 id: videoId
             }
         });
+
+        const thumbnailFile = JSON.parse(videoDb.thumbnail);
+        const videoFile = JSON.parse(videoDb.video);
+
+        cloudinary.uploader.destroy(thumbnailFile.filename, (error, result)=>{
+            console.log(error, result)
+        })
+
+        cloudinary.uploader.destroy(videoFile.filename, {resource_type: 'video'}, (error, result)=>{
+            console.log(error, result)
+        })
 
         return res.send({
             status: "success",
@@ -416,6 +447,8 @@ const deleteVideo = async (req, res) => {
         });
     }
 }
+
+
 
 exports.getVideos = getVideos;
 exports.getVideoById = getVideoById;

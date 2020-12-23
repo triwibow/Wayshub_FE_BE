@@ -10,8 +10,8 @@ const Preview = (props) => {
                 <img src={props.data.photo} alt="preview" />
             </div>
             <div className="preview-image">
-                <h2>Thumbnail</h2>
-                <img src={props.data.thumbnail} alt="preview" />
+                <h2>Cover</h2>
+                <img src={props.data.cover} alt="preview" />
             </div>     
 
         </div>

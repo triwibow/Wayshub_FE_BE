@@ -21,6 +21,7 @@ const Navbar = () => {
             setLoading(true);
         } else {
             setLoading(false);
+            
         }
     }
 
@@ -50,7 +51,7 @@ const Navbar = () => {
 
                     <li className="navbar-menu-item">
                         <button className="navbar-menu-button" onClick={handleDropdown}>
-                            {loading ? "":<img src={`http://localhost:5000/photo/${currentUser.photo}`} alt="add_video_icon"/>}
+                            {loading && !currentUser ? "":<img src={JSON.parse(currentUser.photo).path} alt="add_video_icon"/>}
                         </button>
                         {isDropdown ? <Dropdown/>: ""}
                     </li>

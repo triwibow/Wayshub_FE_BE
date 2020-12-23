@@ -1,6 +1,6 @@
 import '../App.css';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import attach_thumbnail from '../icon/attach_thumbnail.png';
 import add_video_icon_active from '../icon/add_video_icon_active.svg';
 
@@ -10,12 +10,14 @@ import Navbar from '../component//navbar/Navbar';
 import Alert from '../component/form/Alert';
 import ButtonLoader from '../component/loader/ButtonLoader';
 import SuccessInfo from '../component/form/SuccessInfo';
+import ProgressBar from '../component/progressbar/ProgressBar';
 
 import { API } from '../config/api';
 
 const AddVideo = () => {
     const [thumbnail, setThumbnail] = useState('Attach Thumbnail');
     const [video, setVideo] = useState('Upload Video');
+    const [progres, setProgres] = useState(0);
 
     const thumbnailFile = React.useRef();
     const videoFile = React.useRef();
@@ -106,6 +108,11 @@ const AddVideo = () => {
             headers: {
               "content-type": "multipart/form-data",
             },
+            onUploadProgress: (event)=> {
+                const {loaded, total} = event;
+                let percent = Math.floor( (loaded * 100) / total )
+                setProgres(percent);
+            }
         };
 
         try {
@@ -120,6 +127,9 @@ const AddVideo = () => {
                     message: response.data.error.message
                 });
 
+                console.log(response.data.error);
+
+                setProgres(0);
                 setLoading(false);
 
                 return;
@@ -136,10 +146,12 @@ const AddVideo = () => {
             videoFile.current.value = "";
             setVideo('Upload Video');
             setThumbnail('Attach Thumbnail');
+            setProgres(0);
             setLoading(false);
             setSuccess(true);
            
         } catch(err){
+            setProgres(0);
             setLoading(false);
             console.log(err);
         }
@@ -150,6 +162,7 @@ const AddVideo = () => {
             <Sidebar/>
             <div className="container">
                 <Navbar/>
+                {loading && (<ProgressBar message={progres} />)}
                 <div className="form-container">
                     <h1>Add Video</h1>
                     {success && (<SuccessInfo message="Video added successfully" />)}

@@ -64,7 +64,7 @@ const Sidebar = () => {
                     return (
                         <li className="sidebar-list-item" key={subscribtion.id}>
                             <Link to={`/content-creator/${subscribtion.id}`} className="sidebar-link">
-                                <img src={`http://localhost:5000/photo/${subscribtion.photo}`} alt="user_channel_icon" className="sidebar-photo-profile" />
+                                <img src={JSON.parse(subscribtion.photo).path} alt="user_channel_icon" className="sidebar-photo-profile" />
                                 <span className="sidebar-username">{subscribtion.chanelName}</span>
                             </Link>
                         </li>

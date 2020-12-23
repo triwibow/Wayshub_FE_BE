@@ -30,7 +30,7 @@ const Comment = (props) => {
         <div className="comment-container">
             <form className="comment-form" onSubmit={handleSubmit}>
                 <div className="comment-input">
-                    <img src={`http://localhost:5000/photo/${props.currentUser.photo}`} alt="profile" />
+                    <img src={JSON.parse(props.currentUser.photo).path} alt="profile" />
                     <textarea
                         type="text" 
                         placeholder="Add Comment..." 

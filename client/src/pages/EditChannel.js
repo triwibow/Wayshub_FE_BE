@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import edit_channel_icon from '../icon/edit_channel_icon.svg';
 
 import Sidebar from '../component/sidebar/Sidebar';
@@ -7,10 +7,12 @@ import Preview from '../component/preview/Preview';
 import Alert from '../component/form/Alert';
 import ButtonLoader from '../component/loader/ButtonLoader';
 import SuccessInfo from '../component/form/SuccessInfo';
+import {AppContext} from '../context/AppContext';
 import { API } from '../config/api';
 
 const EditChannel = () => {
-    const [cover, setCover] = useState('Thumbnail');
+    const [state, dispatch] = useContext(AppContext);
+    const [cover, setCover] = useState('Cover');
     const [photo, setPhoto] = useState('Upload Photo');
     const [preview, setPreview] = useState({});
     const [success, setSuccess] = useState(false);
@@ -29,7 +31,7 @@ const EditChannel = () => {
         password: "",
         chanelName: "",
         description: "",
-        thumbnail: "",
+        cover: "",
         photo: ""
     });
 
@@ -61,12 +63,12 @@ const EditChannel = () => {
             reader.onloadend = () => {
                 setPreview({
                     ...preview, 
-                    thumbnail: reader.result
+                    cover: reader.result
                 });
         }
             
         } else {
-            setCover('Thumbnail');
+            setCover('Cover');
         }
         
     }
@@ -138,8 +140,8 @@ const EditChannel = () => {
 
             setPreview({
                 ...preview,
-                thumbnail: `http://localhost:5000/thumbnail/${chanel.thumbnail}`,
-                photo: `http://localhost:5000/photo/${chanel.photo}`
+                cover: JSON.parse(chanel.cover).path,
+                photo: JSON.parse(chanel.photo).path
             });
     
 
@@ -165,7 +167,7 @@ const EditChannel = () => {
         body.append('description', formData.description);
         
         if(coverFile.current.files[0]){
-            body.append('thumbnail', formData.thumbnail);
+            body.append('cover', formData.cover);
         }
 
         if(photoFile.current.files[0]){
@@ -195,7 +197,24 @@ const EditChannel = () => {
 
             setLoading(false);
             setSuccess(true);
-            
+            setError({
+                status: false,
+                message: ''
+            })
+            setPhoto('Upload Photo');
+            setCover('Cover');
+
+            const user = await API.get('/auth');
+            if(user.data.status !== 'success'){
+                return dispatch({
+                    type: 'AUTH_ERROR'
+                })
+            };
+
+            dispatch({
+                type: 'LOAD_USER',
+                payload: user.data.data.user
+            })
            
         } catch(err){
             setLoading(false);
@@ -233,7 +252,7 @@ const EditChannel = () => {
                                     type="file" 
                                     ref={coverFile} 
                                     onChange={handleCoverInputChange} 
-                                    name="thumbnail"
+                                    name="cover"
                                 />
                                 <img src={edit_channel_icon} alt="icon"/>    
                             </div>

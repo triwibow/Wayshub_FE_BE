@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const { auth } = require('../middleware/auth');
+const { uploadCloudinary } = require('../middleware/uploadCloudinary')
 const { upload } = require('../middleware/upload');
 const { register } = require('../controllers/register');
 const { login } = require('../controllers/login');
@@ -50,15 +51,15 @@ router.post('/login', login);
 router.get('/chanels', getChanels);
 router.get('/chanel/:id', getChanelById);
 router.get('/chanel/:id/videos', getVideosByChanelId);
-router.put('/chanel/:id', auth, upload(["photo", "thumbnail"]), editChanel);
+router.put('/chanel/:id', auth, uploadCloudinary(["photo", "cover"]), editChanel);
 router.delete('/chanel/:id', auth, deleteChanel);
 
 // videos
 router.get('/videos', getVideos);
 router.get('/video/:id', getVideoById);
-router.post('/video', auth, upload(["thumbnail", "video"]), addVideo);
 router.put('/video/:videoId', auth, upload(["thumbnail", "video"]), editVideo);
 router.delete('/video/:videoId', auth, deleteVideo);
+router.post('/video', auth, uploadCloudinary(["thumbnail", "video"]), addVideo);
 
 // comments
 router.get('/video/:videoId/comments', getCommentsByVideo);

@@ -192,7 +192,9 @@ const ContentCreator = () => {
     
     useEffect(() => {
         checkSubscribe();
-    }, [chanel.id])
+    }, [chanel.id]);
+
+    console.log(chanel)
      
     return(
         <div className="wrapper">
@@ -209,11 +211,11 @@ const ContentCreator = () => {
                 ):(
                     <>
                         <div className="cover">
-                            <img src={`http://localhost:5000/thumbnail/${chanel.thumbnail}`} alt="cover" />
+                            <img src={JSON.parse(chanel.cover).path} alt="cover" />
                         </div>
                         <div className="channel-wrapper">
                             <div className="channel-header border-bottom">
-                                <img src={`http://localhost:5000/photo/${chanel.photo}`} alt="foto profil"/>
+                                <img src={JSON.parse(chanel.photo).path} alt="foto profil"/>
                                 <div className="channel-username">
                                     <span>{chanel.chanelName}</span>
                                     <span>{subscribers} Subscribers</span>

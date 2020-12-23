@@ -63,7 +63,7 @@ const CommentList = (props) => {
                     />
                 )}
             <div className="triangle-comment"></div>
-            <img className="comment-thumbnail" src={`http://localhost:5000/photo/${props.data.chanel.photo}`} alt="proifl"/>
+            <img className="comment-thumbnail" src={JSON.parse(props.data.chanel.photo).path} alt="proifl"/>
             <div className="comment-body">
                 {loading ? (
                     <CommentLoader />

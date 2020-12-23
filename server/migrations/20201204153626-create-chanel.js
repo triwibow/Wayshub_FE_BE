@@ -17,11 +17,11 @@ module.exports = {
       description: {
         type: Sequelize.TEXT
       },
-      thumbnail: {
-        type: Sequelize.STRING
+      cover: {
+        type: Sequelize.TEXT
       },
       photo: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       password: {
         type: Sequelize.STRING

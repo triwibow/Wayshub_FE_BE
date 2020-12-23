@@ -1,7 +1,6 @@
 import './channel.css';
 import {Fragment, useState} from 'react';
 import {Link} from 'react-router-dom';
-import navbar_photo_profile from '../../icon/navbar_photo_profile.svg';
 
 const ChannelHeader = (props) => {
     const [activeNav, setActiveNav] = useState(true);
@@ -14,7 +13,7 @@ const ChannelHeader = (props) => {
     return (
         <Fragment>
             <div className="channel-header">
-                <img src={`http://localhost:5000/photo/${props.data.photo}`} alt="foto profil"/>
+                <img src={JSON.parse(props.data.photo).path} alt="foto profil"/>
                 <div className="channel-username">
                     <span className="content-creator-username">{props.data.chanelName}</span>
                     <span className="count-subscriber">{props.data.subscribers.length} Subscriber</span>

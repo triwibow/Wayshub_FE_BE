@@ -7,7 +7,7 @@ const {
 
 const Joi = require('joi');
 const bcrypt = require('bcrypt');
-const { moveFile, deleteFile } = require('../helper/file');
+const { cloudinary } = require('../../config/cloudinary');
 
 const getChanels = async (req, res) => {
     try {
@@ -150,12 +150,25 @@ const editChanel = async (req, res) => {
         });
 
         const { body } = req;
-        const thumbnailName = (req.files.thumbnail) ? req.files.thumbnail[0].filename : chanelDb.thumbnail
-        const photoName = (req.files.photo) ? req.files.photo[0].filename : chanelDb.photo;
+        const coverFile = (req.files.cover) ? req.files.cover[0] : JSON.parse(chanelDb.cover);
+        const photoFile = (req.files.photo) ? req.files.photo[0] : JSON.parse(chanelDb.photo);
 
         if(currentUserLoginId != id){
-            deleteFile('tmp/photo', photoName);
-            deleteFile('tmp/thumbnail', thumbnailName);
+            if(coverFile.encoding){
+                if(coverFile.filename !== 'cover/default_cover'){
+                    cloudinary.uploader.destroy(coverFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
+
+            if(photoFile.encoding){
+                if(photoFile.filename !== 'photo/default_photo'){
+                    cloudinary.uploader.destroy(photoFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
             return res.status(400).send({
                 status: "error",
                 error: {
@@ -188,8 +201,21 @@ const editChanel = async (req, res) => {
         });
 
         if(error){
-            deleteFile('tmp/photo', photoName);
-            deleteFile('tmp/thumbnail', thumbnailName);
+            if(coverFile.encoding){
+                if(coverFile.filename !== 'cover/default_cover'){
+                    cloudinary.uploader.destroy(coverFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
+
+            if(photoFile.encoding){
+                if(photoFile.filename !== 'photo/default_photo'){
+                    cloudinary.uploader.destroy(photoFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -199,8 +225,21 @@ const editChanel = async (req, res) => {
         }
 
         if(checkEmail && body.email !== chanelDb.email){
-            deleteFile('tmp/photo', photoName);
-            deleteFile('tmp/thumbnail', thumbnailName);
+            if(coverFile.encoding){
+                if(coverFile.filename !== 'cover/default_cover'){
+                    cloudinary.uploader.destroy(coverFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
+
+            if(photoFile.encoding){
+                if(photoFile.filename !== 'photo/default_photo'){
+                    cloudinary.uploader.destroy(photoFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -211,8 +250,21 @@ const editChanel = async (req, res) => {
 
 
         if(checkChanelName && body.chanelName !== chanelDb.chanelName){
-            deleteFile('tmp/photo', photoName);
-            deleteFile('tmp/thumbnail', thumbnailName);
+            if(coverFile.encoding){
+                if(coverFile.filename !== 'cover/default_cover'){
+                    cloudinary.uploader.destroy(coverFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
+
+            if(photoFile.encoding){
+                if(photoFile.filename !== 'photo/default_photo'){
+                    cloudinary.uploader.destroy(photoFile.filename, (error, result)=>{
+                        console.log(error, result)
+                    })
+                }
+            }
             return res.send({
                 status: 'error',
                 error: {
@@ -221,12 +273,22 @@ const editChanel = async (req, res) => {
             });
         }
 
+        const coverUpload = {
+            path: coverFile.path,
+            filename: coverFile.filename
+        }
+
+        const photoUpload = {
+            path: photoFile.path,
+            filename: photoFile.filename
+        }
+
 
         await Chanel.update({
             ...body,
             password: chanelDb.password,
-            thumbnail: thumbnailName,
-            photo: photoName
+            cover: JSON.stringify(coverUpload),
+            photo: JSON.stringify(photoUpload)
         }, {
             where: {
                 id
@@ -242,15 +304,22 @@ const editChanel = async (req, res) => {
             }
         });
 
-        moveFile('photo', chanel.photo);
-        moveFile('thumbnail', chanel.thumbnail);
         
-        if(chanel.photo !== chanelDb.photo){
-            deleteFile('photo', chanelDb.photo);
+        
+        if(coverFile.encoding){
+            if(JSON.parse(chanelDb.cover).filename !== 'cover/default_cover'){
+                cloudinary.uploader.destroy(JSON.parse(chanelDb.cover).filename, (error, result)=>{
+                    console.log(error, result)
+                })
+            }
         }
 
-        if(chanel.thumbnail !== chanelDb.thumbnail){
-            deleteFile('thumbnail', chanelDb.thumbnail);
+        if(photoFile.encoding){
+            if(JSON.parse(chanelDb.photo).filename !== 'photo/default_photo'){
+                cloudinary.uploader.destroy(JSON.parse(chanelDb.photo).filename, (error, result)=>{
+                    console.log(error, result)
+                })
+            }
         }
         
         return res.send({

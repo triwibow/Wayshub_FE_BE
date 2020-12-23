@@ -32,7 +32,7 @@ const Card = (props) => {
             {modal && (<Modal closemodal={() => { closeModal() }} actionDelete={() => deleteVideo()}/>)}
             <div className="card-thumbnail-container">
                 <Link to={`/detail/${props.data.id}`} className="link">
-                    <img src={`http://localhost:5000/thumbnail/${props.data.thumbnail}`} alt="card_thumbnail" className="card-thumbnail" />
+                    <img src={JSON.parse(props.data.thumbnail).path} alt="card_thumbnail" className="card-thumbnail" />
                 </Link>
                 {props.edit && (
                     <button className="btn-delete" onClick={showModal}>

@@ -22,13 +22,13 @@ module.exports = {
         type: Sequelize.STRING
       },
       thumbnail: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       description: {
         type: Sequelize.TEXT
       },
       video: {
-        type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
       viewCount: {
         type: Sequelize.INTEGER

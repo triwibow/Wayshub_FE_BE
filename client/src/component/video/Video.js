@@ -74,7 +74,7 @@ const Video = (props) => {
                     height="100%"
                     className="video-player"
                     playing
-                    url={`http://localhost:5000/video/${props.data.video}`}
+                    url={JSON.parse(props.data.video).path}
                     controls={true}
                 />
                 <h1 className="video-title">{props.data.title}</h1>
@@ -87,7 +87,7 @@ const Video = (props) => {
             </div>
             <div className="video-description-wrapper">
                 <div className="video-description-header">
-                    <img src={`http://localhost:5000/photo/${props.data.chanel.photo}`} alt="foto profil"/>
+                    <img src={JSON.parse(props.data.chanel.photo).path} alt="foto profil"/>
                     <div className="video-username">
                         <Link to={`/content-creator/${props.data.chanel.id}`} className="link">
                             <span className="content-creator-username">{props.data.chanel.chanelName}</span>

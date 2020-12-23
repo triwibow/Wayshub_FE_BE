@@ -55,11 +55,9 @@ const MyChannel = () => {
                 setError(true);
                 return;
             }
-    
 
             setChanel(response.data.data.chanel);
             setVideos(videosByChanelId.data.data.videos);
-
            
             setLoading(false);
         } catch(err){
@@ -87,7 +85,7 @@ const MyChannel = () => {
                 ):(
                     <>
                         <div className="cover">
-                            <img src={`http://localhost:5000/thumbnail/${chanel.thumbnail}`} alt="cover" />
+                            <img src={JSON.parse(chanel.cover).path} alt="cover" />
                         </div>
                         <div className="channel-wrapper">
                             <ChannelHeader current={(status) => handleChannel(status)} data={chanel}/>
