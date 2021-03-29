@@ -25,20 +25,6 @@
     color: #FFFFFF;
   }
   
-  .video-wrapper span {
-    font-family: Avenir, sans-serif;
-    font-style: normal;
-    font-weight: normal;
-    font-size: 12px;
-    line-height: 101.5%;
-    /* or 12px */
-    color: #aaaaaa;
-    margin-right: 20px;
-  }
-
-  .video-wrapper span img {
-    margin-right: 5px;
-  }
   
   .video-description-wrapper {
     margin-top: 10px;
@@ -189,6 +175,61 @@
   .create-now:hover {
     color: #555555;
   }
+
+
+  /* video info */
+
+  .video-info {
+    display: grid;
+    width: 50%;
+    grid-template-columns: 50px 50px 1fr;
+    align-items: center;
+    column-gap: 20px;
+  }
+
+  
+
+  .info-item {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    align-items: center;
+  }
+
+  .info-item span {
+    font-family: Avenir, sans-serif;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 14px;
+    line-height: 101.5%;
+    color: #aaaaaa;
+    margin-right: 20px;
+  }
+
+  .info-item img {
+    margin-right: 5px;
+    width: 20px;
+    height: 20px
+  }
+
+  .info-item button {
+    box-sizing: border-box;
+    background: transparent;
+    padding-top: 5px;
+    padding-left: 0;
+    border: none;
+    cursor: pointer;
+  }
+
+  .info-item button:focus{
+    outline: none;
+  }
+
+  .info-item button img {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* end video info */
   
   
   /* end video */

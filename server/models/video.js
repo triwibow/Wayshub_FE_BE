@@ -18,6 +18,8 @@ module.exports = (sequelize, DataTypes) => {
       Video.hasMany(models.Comment, {
         as:'comments'
       });
+
+      Video.hasMany(models.LikeVideo);
     }
   };
   Video.init({

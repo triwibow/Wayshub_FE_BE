@@ -40,6 +40,8 @@ const {
 } = require('../controllers/subscribes');
 
 const { checkAuth } = require('../controllers/checkAuth');
+const { search } = require('../controllers/search');
+const {checkLike, addLike, unlike} = require('../controllers/likeVideo');
 
 // register
 router.post('/register', register);
@@ -55,7 +57,7 @@ router.put('/chanel/:id', auth, uploadCloudinary(["photo", "cover"]), editChanel
 router.delete('/chanel/:id', auth, deleteChanel);
 
 // videos
-router.get('/videos', getVideos);
+router.get('/videos/:offset/:limit', getVideos);
 router.get('/video/:id', getVideoById);
 router.put('/video/:videoId', auth, upload(["thumbnail", "video"]), editVideo);
 router.delete('/video/:videoId', auth, deleteVideo);
@@ -77,5 +79,13 @@ router.post('/check-subscribe', auth, checkSubscribe);
 
 // check auth
 router.get('/auth', auth, checkAuth);
+
+// search
+router.post('/search', auth, search);
+
+// like
+router.get('/check-like/:videoId', auth, checkLike);
+router.post('/add-like', auth, addLike);
+router.delete('/unlike/:videoId', auth, unlike);
 
 module.exports = router;

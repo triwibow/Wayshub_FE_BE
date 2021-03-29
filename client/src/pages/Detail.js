@@ -10,6 +10,7 @@ import Card from '../component/card/Card';
 import Sidebar from '../component/sidebar/Sidebar';
 import Navbar from '../component//navbar/Navbar';
 import PageLoader from '../component/loader/PageLoader';
+import ButtonLoader from '../component/loader/ButtonLoader';
 
 import { AppContext } from '../context/AppContext';
 
@@ -20,51 +21,61 @@ const Detail = () => {
     const { id } = useParams();
 
     const [error, setError] = useState(false);
+    const [limit, setLimit] = useState(5);
+    const [isFinish, setIsFinish] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [loadShowMore, setLoadShowMore] = useState(false);
     const [video, setVideo] = useState();
     const [recomendationVideos, setRecomendationVideos] = useState([]);
     const [channel, setChanel] = useState();
     const [comments, setComments] = useState([]);
     const [subscribers, setSubscribers] = useState();
-    const [maxShow, setMaxShow] = useState(3);
     const currentUser = JSON.parse(localStorage.getItem('user'));
 
-    const randomIndex = (max) => {
-        const randomNumber = [];
+    const [isLiked, setIsLiked] = useState(false);
+    const [countLikes, setCountLikes] = useState(0);
 
-        for(let i = 0; i < max; i++){
-            let newNumber = Math.floor(Math.random() * max);
-            
-            const checkNumber = randomNumber.indexOf(newNumber);
-            
-            if(checkNumber < 0){
-                randomNumber.push(newNumber);
-            } else {
-                i--;
-            }
-            
-        }
-        return randomNumber;
-        
-    }
 
     const getVideos = async () => {
         try {
-            const response = await API.get('/videos');
-            const numbers = randomIndex(response.data.data.videos.length);
-            const randomVideos = []
-            numbers.forEach(number => {
-                randomVideos.push(response.data.data.videos[number]);
-            });
-            setRecomendationVideos(randomVideos);
+            const response = await API.get(`/videos/${0}/${limit}`);
+
+            if(response.data.status !== "success"){
+                setError(true);
+                return;
+            }
+            setRecomendationVideos(response.data.data.videos);
 
         } catch(err){
             console.log(err);
         }
     }
 
-    const showMore = () => {
-        setMaxShow(maxShow + 2);
+    const showMore = async () => {
+        
+       try {
+            setLoadShowMore(true);
+            const tmpData = [...recomendationVideos];
+            const lastIndex = tmpData.length;
+    
+            const response = await API.get(`/videos/${lastIndex}/${limit}`);
+    
+            if(response.data.data.videos.length === 0){
+                setIsFinish(true);
+            }
+    
+            for(let i = 0; i < response.data.data.videos.length; i++){
+                tmpData[lastIndex + i] = response.data.data.videos[i]
+            }
+    
+            setRecomendationVideos(tmpData);
+            setLoadShowMore(false);
+
+       } catch(err){
+           console.log(err);
+           setLoadShowMore(false);
+       }
+
     }
     
 
@@ -241,13 +252,70 @@ const Detail = () => {
         } catch(err){
             console.log(err);
         }
+    }    
+
+    const checkLike = async () => {
+        try {
+            const response = await API.get(`/check-like/${id}`);
+
+            if(response.data.status !== "success"){
+                setError(true);
+                return;
+            }
+
+            setIsLiked(response.data.data.isLiked);
+            setCountLikes(response.data.data.countLikes);
+        } catch(err){
+            console.log(err);
+        }
     }
+
+    const doLike = async () => {
+        try{
+            const body = {
+                videoId: id
+            }
+
+            const response = await API.post('/add-like', body);
+
+            if(response.data.status !== "success"){
+                setError(true);
+                return;
+            }
+
+            setIsLiked(true);
+            setCountLikes(countLikes + 1);
+
+        } catch(err){
+            console.log(err)
+        }
+    }
+
+    const unLike = async () => {
+        try {
+
+            const response = await API.delete(`/unlike/${id}`);
+
+            if(response.data.status !== "success"){
+                setError(true);
+                return;
+            }
+
+            setIsLiked(false);
+            setCountLikes(countLikes - 1);
+
+        } catch(err){
+            console.log(err);
+        }
+    }
+
+    
 
     useEffect(() => {
         getSubscribtion();
         getVideoById();
         getVideos();
-        
+        checkLike();
     },[id]);
 
     
@@ -274,11 +342,18 @@ const Detail = () => {
                                 comments={comments}
                                 addComment={async (formData) => await addComment(formData)}
                                 deleteComment={async (commentId) => await deleteComment(commentId)}
+                                isLiked={isLiked}
+                                countLikes={countLikes}
+                                doLike={() => doLike()}
+                                unLike={() => unLike()}
+                        
+                                
+                               
                             />
                             <div className="recomendation-video">
                                 {recomendationVideos.map(recomendVideo => {
-                                    return (recomendationVideos.indexOf(recomendVideo) > maxShow) ? (null):
-                                    (recomendVideo.id === video.id)? (null): (
+                                    
+                                    return (recomendVideo.id === video.id)? (null): (
                                     <Card 
                                             key={recomendVideo.id} 
                                             data={recomendVideo}
@@ -287,10 +362,17 @@ const Detail = () => {
                                     )
                                     
                                 })}
-                                {maxShow > recomendationVideos.length ? 
+                            
+                                {isFinish ? 
                                         null
                                     :
-                                        <button onClick={showMore} className="show-more-videos">Show More</button>}
+                                        <button onClick={showMore} className="show-more-videos">
+                                            {loadShowMore ? (
+                                                <ButtonLoader />
+                                            ): (
+                                                "Show More"
+                                            )}    
+                                        </button>}
                             </div>
                            
                         </div>

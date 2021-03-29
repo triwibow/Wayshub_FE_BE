@@ -11,6 +11,7 @@ import { API, setAuthToken } from '../config/api';
 const Login = () => {
     const router = useHistory()
     const [state, dispatch] = useContext(AppContext);
+    const [loading, setLoading] = useState(false);
     const inputRef = useRef([createRef(), createRef()]);
     const [error, setError] = useState({
         status: false,
@@ -45,8 +46,9 @@ const Login = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-
+            setLoading(true);
             if(!validate()){
+                setLoading(false);
                 return false;
             }
 
@@ -59,10 +61,12 @@ const Login = () => {
             const response = await API.post('/login', body, config);
 
             if(response.data.status === "error"){
+                
                 setError({
                     status: true,
                     message: "Invalid login"
                 });
+                setLoading(false);
                 return false;
             }
 

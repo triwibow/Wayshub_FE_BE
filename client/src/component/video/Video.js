@@ -6,6 +6,8 @@ import Comment from '../comment/Comment';
 
 import number_views from '../../icon/number_views.svg';
 import refresh_icon from '../../icon/refresh_icon.svg';
+import like from '../../icon/like.png';
+import liked from '../../icon/liked.png';
 import SubscribeModal from '../modal/SubscribeModal';
 import { useEffect, useState } from 'react';
 
@@ -13,13 +15,13 @@ const Video = (props) => {
     const [isSubscribe, setIsSubscribe] = useState(false);
     const [isSameChanel, setIsSameChanel] = useState(false);
     const currentUser = JSON.parse(localStorage.getItem('user'));
-    const [modal, setModal] = useState({
+    const [toast, setToast] = useState({
         status: false,
         message: ""
     });
 
     const closeModal = () => {
-        setModal({
+        setToast({
             status: false,
             message: ""
         });
@@ -29,7 +31,7 @@ const Video = (props) => {
     const doSubscribe = () => {
         props.subscribe();
         setIsSubscribe(true);
-        setModal({
+        setToast({
             status: true,
             message: "Subscribe to this channel"
         });
@@ -38,7 +40,7 @@ const Video = (props) => {
     const doUnSubscribe = () => {
         props.unSubscribe();
         setIsSubscribe(false);
-        setModal({
+        setToast({
             status: true,
             message: "Unsubscribe to this channel"
         });
@@ -50,13 +52,30 @@ const Video = (props) => {
         setIsSubscribe(subscribe);
     }
 
+    const doLike = () => {
+        props.doLike();
+        setToast({
+            status: true,
+            message: "Like this video"
+        })
+    }
+
+    const unLike = () => {
+        props.unLike();
+        setToast({
+            status: true,
+            message: "Unlike this video"
+        })
+    }
+
+
     useEffect(() => {
         if(currentUser.id === props.data.chanel.id){
             setIsSameChanel(true);
         }
        checkSubscribe();
        return () => {
-           setModal({
+           setToast({
                status: false,
                message: ""
            });
@@ -67,7 +86,7 @@ const Video = (props) => {
 
     return(
         <div>
-            {modal.status && (<SubscribeModal message={modal.message} closeModal={() => closeModal()} />)}
+            {toast.status && (<SubscribeModal message={toast.message} closeModal={() => closeModal()} />)}
             <div className="video-wrapper">
                 <ReactPlayer
                     width="100%"
@@ -78,12 +97,31 @@ const Video = (props) => {
                     controls={true}
                 />
                 <h1 className="video-title">{props.data.title}</h1>
-                <span>
-                    <img src={number_views} alt="number_views" /> {props.data.viewCount}
-                </span>
-                <span>
-                    <img src={refresh_icon} alt="refresh_icon" /> {new Date(props.data.createdAt).toLocaleDateString()}
-                </span>
+                <div className="video-info">
+                    <div className="info-item">
+                        {
+                            props.isLiked ? (
+                                <button onClick={unLike}>
+                            <img src={liked} alt="like-views" />
+                        </button>
+                            ): (
+                                <button onClick={doLike}>
+                            <img src={like} alt="like-views" />
+                        </button>
+                            )
+                        }
+                        <span>{props.countLikes}</span>
+                    </div>
+                    <div className="info-item">
+                        <img src={number_views} alt="number_views" /> 
+                        <span>{props.data.viewCount}</span>
+                    </div>
+
+                    <div className="info-item">
+                        <img src={refresh_icon} alt="refresh_icon" />
+                        <span>{new Date(props.data.createdAt).toLocaleDateString()}</span>
+                    </div>
+                </div>
             </div>
             <div className="video-description-wrapper">
                 <div className="video-description-header">

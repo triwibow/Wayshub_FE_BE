@@ -18,14 +18,16 @@ const Sidebar = () => {
     const getSubscribtion = async () => {
         try {
             const subscribtions = await API.get('/subscribe');
-
+          
             if(subscribtions.data.status === "success"){
+                
                 dispatch({
                     type: "LOAD_SUBSCRIBTION",
                     payload: subscribtions.data.data
                 });
                 return;
             }
+
 
         } catch(err){
             console.log(err)

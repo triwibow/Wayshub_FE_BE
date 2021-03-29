@@ -4,10 +4,9 @@
   "description": "API for WaysHub App",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "start-dev": "nodemon index.js",
+    "start": "nodemon index.js",
     "client": "npm start --prefix ../client",
-    "dev": "concurrently \"npm start-dev\"  \"npm run client\""
+    "dev": "concurrently \"npm start\"  \"npm run client\""
   },
   "author": "Tri Wibowo",
   "license": "ISC",

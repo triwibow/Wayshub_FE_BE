@@ -10,7 +10,16 @@ const { cloudinary } = require('../../config/cloudinary');
 
 const getVideos = async (req, res) => {
     try {
+
+        const {offset, limit} = req.params;
+
         const videos = await Video.findAll({
+            subQuery:false,
+            offset: parseInt(offset),
+            limit: parseInt(limit),
+            order: [
+                ['id', 'DESC'],
+            ],
             attributes: {
                 exclude:['updatedAt','chanelId', 'chanelid', 'ChanelId']
             },
@@ -20,7 +29,9 @@ const getVideos = async (req, res) => {
                 attributes:{
                     exclude:['updatedAt', 'createdAt', 'password']
                 }
-            }
+            },
+            
+            
         });
 
         if(!videos){
@@ -207,6 +218,7 @@ const addVideo = async (req, res) => {
                 video: JSON.stringify(videoUpload),
                 viewCount: 0
             }
+            
         );
 
         const video = await Video.findOne({

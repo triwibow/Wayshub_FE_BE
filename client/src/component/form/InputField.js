@@ -71,9 +71,9 @@ const InputField = forwardRef((props, ref) => {
 
     useEffect(() => {
         if(submit){
-            setValue('');
             setSubmit(false);
             setFocus(false);
+            setValue('')
         }
 
         if(isFocus){ 
